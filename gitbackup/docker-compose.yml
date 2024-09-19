@@ -1,0 +1,48 @@
+# version: '3.8'  # Remove this line
+services:
+  # React application service
+  react-app:
+    image: ghcr.io/dk22101990/dockernet-react-app:latest
+    container_name: react-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - dotnet-api
+    networks:
+      - appnetwork
+
+  # .NET Core API service
+  dotnet-api:
+    image: ghcr.io/dk22101990/dockernet-dotnet-api:latest
+    container_name: dotnet-api
+    ports:
+      - "5000:80"
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=ComplianceProject;User=sa;Password=YourPassword123;
+    networks:
+      - appnetwork
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourPassword123
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+     
+      
+    networks:
+      - appnetwork
+
+networks:
+  appnetwork:
+    driver: bridge
+
+volumes:
+  mssql_data:
